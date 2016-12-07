@@ -29,8 +29,6 @@ using std::exception;
 using Potree::PotreeConverter;
 using Potree::StoreOption;
 
-#define MAX_FLOAT std::numeric_limits<float>::max()
-
 class SparseGrid;
 
 void printUsage(po::options_description &desc){
@@ -66,7 +64,7 @@ struct Arguments{
 	string pageName = "";
 };
 
-Arguments parseArguments(int argc, char **argv){
+Arguments parseArguments(int argc, const char **argv){
 	Arguments a;
 
 	po::options_description desc("Options"); 
@@ -182,11 +180,10 @@ void printArguments(Arguments &a){
 	try{
 
 		cout << "== params ==" << endl;
-		int i = 0;
-		for(const auto &s : a.source) {
+        for(size_t i = 0; i < a.source.size(); i++) {
 			cout << "source[" << i << "]:         \t" << a.source[i] << endl;
-			++i;
-		}
+        }
+
 		cout << "outdir:            \t" << a.outdir << endl;
 		cout << "spacing:           \t" << a.spacing << endl;
 		cout << "diagonal-fraction: \t" << a.diagonalFraction << endl;
@@ -203,7 +200,7 @@ void printArguments(Arguments &a){
 	}
 }
 
-int main(int argc, char **argv){
+int main(int argc, const char **argv){
 	cout.imbue(std::locale(""));
 	
 	
