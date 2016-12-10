@@ -55,11 +55,7 @@ bool SparseGrid::willBeAccepted(const Vector3<double> &p){
 		it = this->insert(value_type(key, new GridCell(this, index))).first;
 	}
 
-	if(isDistant(p, it->second)){
-		return true;
-	}else{
-		return false;
-	}
+	return isDistant(p, it->second);
 }
 
 bool SparseGrid::add(Vector3<double> &p){
