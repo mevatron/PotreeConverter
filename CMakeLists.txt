@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(Potree)
 
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 4)
+set(VERSION_PATCH 0)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 include(cmake/BuildLASzip.cmake)
