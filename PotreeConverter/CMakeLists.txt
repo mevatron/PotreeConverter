@@ -30,8 +30,9 @@ SOURCE_GROUP("Source Files\\io" FILES
 SOURCE_GROUP("lib\\rapidjson" FILES ${lib_rapidjson_files})
 
 add_executable(PotreeConverter ${files} ${lib_rapidjson_files})
+add_dependencies(PotreeConverter LAStools)
 
 target_link_libraries(PotreeConverter ${LASZIP_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 install(TARGETS PotreeConverter RUNTIME DESTINATION bin/ )
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION bin)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION bin/)
