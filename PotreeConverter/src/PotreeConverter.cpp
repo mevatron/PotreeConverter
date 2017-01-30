@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
+#include "PageResources.h"
 #include "PotreeConverter.h"
 #include "stuff.h"
 #include "LASPointReader.h"
@@ -139,10 +140,10 @@ AABB PotreeConverter::calculateAABB(){
 
 void PotreeConverter::generatePage(string name){
 	string pagedir = this->workDir;
-	string templateSourcePath = "./resources/page_template/examples/viewer_template.html";
+	string templateSourcePath = (fs::path(resources::RESOURCES_ROOT) / fs::path("resources/page_template/examples/viewer_template.html")).string();
 	string templateTargetPath = pagedir + "/examples/" + name + ".html";
 
-	Potree::copyDir(fs::path("./resources/page_template"), fs::path(pagedir));
+	Potree::copyDir(fs::path(resources::RESOURCES_ROOT) / fs::path("resources/page_template"), fs::path(pagedir));
 	fs::remove(pagedir + "/examples/viewer_template.html");
 
 	{ // change viewer template
