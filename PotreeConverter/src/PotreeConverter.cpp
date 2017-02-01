@@ -1,7 +1,8 @@
-
-
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 #include "PageResources.h"
 #include "PotreeConverter.h"
@@ -197,20 +198,19 @@ void PotreeConverter::generatePage(string name){
 }
 
 void PotreeConverter::convert(){
+#ifndef NDEBUG
 	auto start = high_resolution_clock::now();
+#endif
 
 	prepare();
 
 	long long pointsProcessed = 0;
 
 	AABB aabb = calculateAABB();
-	cout << "AABB: " << endl << aabb << endl;
 	aabb.makeCubic();
-	cout << "cubic AABB: " << endl << aabb << endl;
 
 	if (diagonalFraction != 0) {
 		spacing = (float)(aabb.size.length() / diagonalFraction);
-		cout << "spacing calculated from diagonal: " << spacing << endl;
 	}
 
 	if(pageName.size() > 0){
@@ -245,8 +245,24 @@ void PotreeConverter::convert(){
 		return;
 	}
 
-	for (const auto &source : sources) {
+	for (size_t i = 0; i < sources.size(); ++i) {
+        std::string source = sources[i];
+
+        // send out JSON updates to caller
+        rapidjson::StringBuffer statusBuffer;
+        rapidjson::Writer<rapidjson::StringBuffer> status(statusBuffer);
+        status.StartObject();
+            status.Key("filename");
+            status.String(source.c_str());
+            status.Key("progress");
+            status.Double(i / static_cast<double>(sources.size()));
+        status.EndObject();
+
+        cout << statusBuffer.GetString() << endl;
+
+#ifndef NDEBUG
 		cout << "READING:  " << source << endl;
+#endif
 
 		PointReader *reader = createPointReader(source, pointAttributes);
 		while(reader->readNextPoint()){
@@ -255,10 +271,11 @@ void PotreeConverter::convert(){
 			Point p = reader->getPoint();
 			writer->add(p);
 
-			if((pointsProcessed % (1000000)) == 0){
+			if((pointsProcessed % 1000000) == 0){
 				writer->processStore();
 				writer->waitUntilProcessed();
 
+#ifndef NDEBUG
 				auto end = high_resolution_clock::now();
 				long long duration = duration_cast<milliseconds>(end-start).count();
 				float seconds = duration / 1000.0f;
@@ -272,45 +289,47 @@ void PotreeConverter::convert(){
 				ssMessage << seconds << " seconds passed";
 
 				cout << ssMessage.str() << endl;
+#endif
 			}
-			if((pointsProcessed % (10000000)) == 0){
+			if((pointsProcessed % 10000000) == 0){
+#ifndef NDEBUG
 				cout << "FLUSHING: ";
-			
-				auto start = high_resolution_clock::now();
-			
+				start = high_resolution_clock::now();
+#endif
 				writer->flush();
-			
+#ifndef NDEBUG
 				auto end = high_resolution_clock::now();
 				long long duration = duration_cast<milliseconds>(end-start).count();
 				float seconds = duration / 1000.0f;
 			
 				cout << seconds << "s" << endl;
+#endif
 			}
-
-			//if(pointsProcessed >= 10'000'000){
-			//	break;
-			//}
 		}
 		reader->close();
 		delete reader;
 	}
-	
+
+#ifndef NDEBUG
 	cout << "closing writer" << endl;
+#endif
+
 	writer->flush();
 	writer->close();
 
-	float percent = (float)writer->numAccepted / (float)pointsProcessed;
-	percent = percent * 100;
+#ifndef NDEBUG
+    float percent = (float)writer->numAccepted / (float)pointsProcessed;
+    percent = percent * 100;
 
-	auto end = high_resolution_clock::now();
-	long long duration = duration_cast<milliseconds>(end-start).count();
+    auto end = high_resolution_clock::now();
+    long long duration = duration_cast<milliseconds>(end-start).count();
 
-	
 	cout << endl;
 	cout << "conversion finished" << endl;
 	cout << pointsProcessed << " points were processed and " << writer->numAccepted << " points ( " << percent << "% ) were written to the output. " << endl;
 
 	cout << "duration: " << (duration / 1000.0f) << "s" << endl;
+#endif
 }
 
 }

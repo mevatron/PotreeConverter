@@ -202,13 +202,12 @@ void printArguments(Arguments &a){
 
 int main(int argc, const char **argv){
 	cout.imbue(std::locale(""));
-	
-	
-	
+
 	try{
 		Arguments a = parseArguments(argc, argv);
+#ifndef NDEBUG
 		printArguments(a);
-
+#endif
 		PotreeConverter pc(a.outdir, a.source);
 
 		pc.spacing = a.spacing;
