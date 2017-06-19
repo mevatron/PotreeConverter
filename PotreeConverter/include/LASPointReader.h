@@ -118,6 +118,7 @@ public:
 
         return p;
     }
+
 	void close(){
 
 	}
@@ -146,6 +147,8 @@ public:
 	AABB getAABB();
 
 	long numPoints();
+
+	unsigned char pointDataFormat() const;
 
 	void close();
 

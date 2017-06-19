@@ -74,6 +74,10 @@ LASPointReader::~LASPointReader(){
 	close();
 }
 
+unsigned char LASPointReader::pointDataFormat() const {
+	return reader->header->point_data_format;
+}
+
 void LASPointReader::close(){
 	if(reader != NULL){
 		reader->close();

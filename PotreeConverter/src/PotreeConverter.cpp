@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 #include <math.h>
 #include <fstream>
@@ -103,15 +104,25 @@ void PotreeConverter::prepare(){
 
 	pointAttributes = PointAttributes();
 	pointAttributes.add(PointAttribute::POSITION_CARTESIAN);
-	for(const auto &attribute : outputAttributes){
-		if(attribute == "RGB"){
-			pointAttributes.add(PointAttribute::COLOR_PACKED);
-		}else if(attribute == "INTENSITY"){
+	if(sources.size() > 0 && (boost::iends_with(sources[0], ".las") || boost::iends_with(sources[0], ".laz"))){
+		std::unique_ptr<LASPointReader> attrReader(new LASPointReader(sources[0]));
+		if(attrReader->pointDataFormat() < 2) {
 			pointAttributes.add(PointAttribute::INTENSITY);
-		}else if(attribute == "CLASSIFICATION"){
-			pointAttributes.add(PointAttribute::CLASSIFICATION);
-		}else if(attribute == "NORMAL"){
-			pointAttributes.add(PointAttribute::NORMAL_OCT16);
+		} else {
+			pointAttributes.add(PointAttribute::COLOR_PACKED);
+			pointAttributes.add(PointAttribute::INTENSITY);
+		}
+	} else {
+		for(const auto &attribute : outputAttributes){
+			if(attribute == "RGB"){
+				pointAttributes.add(PointAttribute::COLOR_PACKED);
+			}else if(attribute == "INTENSITY"){
+				pointAttributes.add(PointAttribute::INTENSITY);
+			}else if(attribute == "CLASSIFICATION"){
+				pointAttributes.add(PointAttribute::CLASSIFICATION);
+			}else if(attribute == "NORMAL"){
+				pointAttributes.add(PointAttribute::NORMAL_OCT16);
+			}
 		}
 	}
 }
