@@ -7,6 +7,10 @@
 #include <iostream>
 #include <vector>
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+
 #include "laszip_dll.h"
 
 #include "Point.h"
@@ -46,6 +50,8 @@ public:
 	int colorScale;
 	double coordinates[3];
 	long long pointsRead = 0;
+    bool hasIntensity = false;
+    bool hasColor = false;
 
     LIBLASReader(string path) {
 
@@ -55,6 +61,7 @@ public:
 		laszip_request_compatibility_mode(laszip_reader, request_reader);
 
 		{// read first 1000 points to find if color is 1 or 2 bytes
+            using namespace boost::accumulators;
 			laszip_BOOL is_compressed = boost::iends_with(path, ".laz") ? 1 : 0;
 			laszip_open_reader(laszip_reader, path.c_str(), &is_compressed);
 
@@ -64,8 +71,11 @@ public:
 			
 			laszip_get_point_pointer(laszip_reader, &point);
 
+            accumulator_set<double, stats<tag::mean> > accColor;
+            accumulator_set<double, stats<tag::mean> > accIntensity;
+
 			colorScale = 1;
-			for(int i = 0; i < 1000 && i < npoints; i++){
+			for(int i = 0; i < 10000 && i < npoints; i++){
 				laszip_read_point(laszip_reader);
 		
 				auto r = point->rgb[0];
@@ -76,9 +86,20 @@ public:
 					colorScale = 256;
 					break;
 				}
+
+                accColor(r + g + b);
+                accIntensity(point->intensity);
 		
 				i++;
 			}
+
+            if(mean(accColor) > 1.0) {
+                hasColor = true;
+            }
+
+            if(mean(accIntensity) > 1.0) {
+                hasIntensity = true;
+            }
 		}
 
 		laszip_seek_point(laszip_reader, 0);
@@ -101,16 +122,20 @@ public:
 	}
 
     Point GetPoint() {
-        
 		laszip_get_coordinates(laszip_reader, coordinates);
 
         Point p = transform(coordinates[0], coordinates[1], coordinates[2]);
-        p.intensity = point->intensity;
         p.classification = point->classification;
 
         p.color.x = point->rgb[0] / colorScale;
         p.color.y = point->rgb[1] / colorScale;
         p.color.z = point->rgb[2] / colorScale;
+
+        if(hasColor && !hasIntensity) {
+            p.intensity = p.color.x;
+        } else {
+            p.intensity = p.intensity;
+        }
 
 		p.returnNumber = point->return_number;
 		p.numberOfReturns = point->number_of_returns;
@@ -149,6 +174,10 @@ public:
 	long numPoints();
 
 	unsigned char pointDataFormat() const;
+
+    bool hasColor() const;
+
+    bool hasIntensity() const;
 
 	void close();
 

@@ -106,11 +106,11 @@ void PotreeConverter::prepare(){
 	pointAttributes.add(PointAttribute::POSITION_CARTESIAN);
 	if(sources.size() > 0 && (boost::iends_with(sources[0], ".las") || boost::iends_with(sources[0], ".laz"))){
 		std::unique_ptr<LASPointReader> attrReader(new LASPointReader(sources[0]));
-		if(attrReader->pointDataFormat() < 2) {
-			pointAttributes.add(PointAttribute::INTENSITY);
-		} else {
-			pointAttributes.add(PointAttribute::COLOR_PACKED);
-			pointAttributes.add(PointAttribute::INTENSITY);
+		if(attrReader->hasColor()) {
+            pointAttributes.add(PointAttribute::COLOR_PACKED);
+            pointAttributes.add(PointAttribute::INTENSITY);
+		} else if(attrReader->hasIntensity()){
+            pointAttributes.add(PointAttribute::INTENSITY);
 		}
 	} else {
 		for(const auto &attribute : outputAttributes){

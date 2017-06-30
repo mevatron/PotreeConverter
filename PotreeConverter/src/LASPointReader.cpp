@@ -78,6 +78,14 @@ unsigned char LASPointReader::pointDataFormat() const {
 	return reader->header->point_data_format;
 }
 
+bool LASPointReader::hasColor() const {
+    return reader->hasColor;
+}
+
+bool LASPointReader::hasIntensity() const {
+    return reader->hasIntensity;
+}
+
 void LASPointReader::close(){
 	if(reader != NULL){
 		reader->close();
