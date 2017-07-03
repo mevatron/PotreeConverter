@@ -82,12 +82,11 @@ public:
 				auto g = point->rgb[1];
 				auto b = point->rgb[2];
 		
-				if(r > 255 || g > 255 || b > 255){
+				if(colorScale == 1 && (r > 255 || g > 255 || b > 255)){
 					colorScale = 256;
-					break;
 				}
 
-                accColor(r + g + b);
+                accColor(static_cast<double>(r + g + b) / static_cast<double>(colorScale));
                 accIntensity(point->intensity);
 		
 				i++;
