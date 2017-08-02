@@ -133,7 +133,7 @@ public:
         if(hasColor && !hasIntensity) {
             p.intensity = p.color.x;
         } else {
-            p.intensity = p.intensity;
+            p.intensity = point->intensity;
         }
 
 		p.returnNumber = point->return_number;
